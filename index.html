@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fatura Dinamike</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f7f7f7;
+        }
+        .receipt {
+            border: 1px solid #ccc;
+            padding: 20px;
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 8px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .receipt-item {
+            margin-bottom: 10px;
+        }
+        .total {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        h2 {
+            color: #333;
+            text-align: center;
+        }
+        .meta-info {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        label {
+            font-weight: bold;
+        }
+        .url-info {
+            margin-top: 20px;
+        }
+        .print-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        @media print {
+            .print-button, .url-info, .receipt {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="receipt" id="dynamicReceipt">
+    <h2>Fatura</h2>
+    <div class="meta-info">
+        <label for="rn">Numri i Faturës:</label>
+        <span id="rn"></span><br>
+
+        <label for="dt">Data:</label>
+        <span id="dt"></span><br>
+
+        <label for="cn">Emri i Klientit:</label>
+        <span id="cn"></span>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Artikulli</th>
+                <th>Sasia</th>
+                <th>Totali</th>
+            </tr>
+        </thead>
+        <tbody id="it">
+            <!-- Rreshtat e artikujve do shtohen dinamikisht këtu -->
+        </tbody>
+    </table>
+
+    <div class="total">
+        <label for="tt">Totali:</label>
+        <span id="tt"></span>
+    </div>
+   
+    <button class="print-button" onclick="printReceipt()">Printo Faturën</button>
+</div>
+
+<script>
+    function getParameterByName(name, url) {
+        if (!url) url = window.location.href;
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+            results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
+
+    function setReceiptData() {
+        document.getElementById("rn").textContent = getParameterByName("rn");
+        document.getElementById("dt").textContent = getParameterByName("dt");
+        document.getElementById("cn").textContent = getParameterByName("cn");
+
+        var itemsTableBody = document.getElementById("it");
+        var itemsData = JSON.parse(getParameterByName("d"));
+
+        itemsData.forEach(function(item) {
+            var row = itemsTableBody.insertRow();
+            var cell1 = row.insertCell(0);
+            var cell2 = row.insertCell(1);
+            var cell3 = row.insertCell(2);
+            cell1.textContent = item.n;
+            cell2.textContent = item.q;
+            cell3.textContent = item.t;
+        });
+
+        var total = 0;
+        itemsData.forEach(function(item) {
+            total += parseFloat(item.t.replace(/[^0-9.-]+/g, ""));
+        });
+
+        document.getElementById("tt").textContent = "$" + total.toFixed(2);
+
+        // Shfaq URL-në aktuale me parametra
+        document.getElementById("currentUrl").textContent = window.location.href;
+    }
+
+    function printReceipt() {
+        window.print();
+    }
+
+    setReceiptData();
+</script>
+
+</body>
+</html>
